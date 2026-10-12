@@ -44,6 +44,24 @@ delinquency (90+ days late) within the next two years.
 | **Logistic Regression (balanced)** | 80.3% | 21.1% | **73.6%** | 0.33 | **0.851** |
 | Random Forest (balanced) | 93.6% | 52.3% | 15.6% | 0.24 | 0.829 |
 
+## Live Demo
+
+**[Try the Credit Risk Predictor](https://martcruz17.github.io/CodeAlpha_CreditScoringModel/credit-risk-predictor.html/)**
+
+A simple web page built on top of the trained model. You type in a 
+person's financial details (age, income, debt ratio, late payments, etc.) 
+and it shows their estimated chance of missing loan payments over the 
+next two years, along with a Low / Medium / High risk label.
+
+It runs entirely in the browser with no server. I exported the trained 
+Logistic Regression's coefficients and the scaler's values from the 
+notebook and rebuilt the same calculation in JavaScript, so the page 
+gives the same results as the model in the notebook. Missing values and 
+extreme inputs are handled the same way as in the cleaning step 
+(median fill, capping, and flag columns).
+
+The page is also in `credit-risk-predictor.html`.
+
 **Final model: Logistic Regression with `class_weight="balanced"`.**
 
 Raw accuracy is misleading here because only ~6.7% of borrowers actually 
