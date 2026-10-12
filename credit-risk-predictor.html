@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Credit Risk Predictor</title>
+<style>
+  :root{
+    --navy:#0F1C2E;
+    --paper:#F6F3EA;
+    --ink:#1B2430;
+    --muted:#5B6672;
+    --gold:#B8903E;
+    --line:#D8D2C3;
+    --low:#3E6B4F;
+    --med:#B8903E;
+    --high:#A3463A;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0;
+    background:var(--navy);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    min-height:100%;
+    display:flex;
+    justify-content:center;
+    padding:40px 18px 60px;
+  }
+  .sheet{
+    width:100%;
+    max-width:860px;
+  }
+  header{
+    color:var(--paper);
+    margin-bottom:22px;
+  }
+  header .eyebrow{
+    color:var(--gold);
+    font-size:13px;
+    letter-spacing:.02em;
+    margin:0 0 6px;
+  }
+  header h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:400;
+    font-size:clamp(28px,4vw,38px);
+    margin:0 0 8px;
+  }
+  header p{
+    color:#B9C2CC;
+    margin:0;
+    max-width:56ch;
+    line-height:1.5;
+    font-size:15px;
+  }
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+  }
+  @media (max-width:720px){
+    .grid{grid-template-columns:1fr;}
+  }
+  .ledger{
+    padding:28px 30px 30px;
+    border-right:1px solid var(--line);
+  }
+  @media (max-width:720px){
+    .ledger{border-right:none;border-bottom:1px solid var(--line);}
+  }
+  .ledger h2{
+    font-size:13px;
+    text-transform:none;
+    color:var(--muted);
+    margin:0 0 18px;
+    font-weight:600;
+  }
+  .row{
+    display:grid;
+    grid-template-columns:1fr 110px;
+    align-items:center;
+    gap:14px;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .row:last-of-type{border-bottom:none;}
+  .row label{
+    font-size:14px;
+    color:var(--ink);
+    line-height:1.3;
+  }
+  .row .hint{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    margin-top:2px;
+  }
+  .row input{
+    width:100%;
+    padding:7px 9px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-size:14px;
+    text-align:right;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  .row input:focus{
+    outline:2px solid var(--gold);
+    outline-offset:1px;
+  }
+  button{
+    margin-top:20px;
+    width:100%;
+    padding:13px 16px;
+    background:var(--navy);
+    color:var(--paper);
+    border:none;
+    border-radius:3px;
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  button:hover{background:#18283D;}
+  button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .result{
+    padding:28px 30px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:#EFEADC;
+  }
+  .result .tag{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 10px;
+  }
+  .result .score{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:52px;
+    line-height:1;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .result .label{
+    font-size:18px;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  .result .label.low{color:var(--low);}
+  .result .label.med{color:var(--med);}
+  .result .label.high{color:var(--high);}
+  .result .desc{
+    font-size:13.5px;
+    color:var(--muted);
+    line-height:1.55;
+    margin:0 0 16px;
+  }
+  .bar{
+    height:7px;
+    background:#DAD3C0;
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .bar-fill{
+    height:100%;
+    width:0%;
+    background:var(--navy);
+    transition:width .5s ease;
+  }
+  .flags{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  footer{
+    margin-top:18px;
+    color:#8C97A3;
+    font-size:12px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Credit Risk Predictor</h1>
+    <p>Type in a person's financial info to see if they will likely miss their loan payments over the next two years. This uses a smart math formula trained on real-world credit data — no server, computed live in your browser.</p>
+  </header>
+
+  <div class="panel">
+    <div class="grid">
+      <div class="ledger">
+        <h2>Borrower details</h2>
+
+        <div class="row">
+          <label for="revolving">Credit utilization<span class="hint">Share of available credit in use (0–2)</span></label>
+          <input type="number" id="revolving" value="0.3" step="0.01" min="0">
+        </div>
+
+        <div class="row">
+          <label for="age">Age</label>
+          <input type="number" id="age" value="45" step="1" min="18">
+        </div>
+
+        <div class="row">
+          <label for="income">Monthly income (₦)<span class="hint">Leave blank if unknown</span></label>
+          <input type="number" id="income" value="5400" step="100" min="0">
+        </div>
+
+        <div class="row">
+          <label for="debtRatio">Debt-to-income ratio<span class="hint">Monthly debt payments ÷ income</span></label>
+          <input type="number" id="debtRatio" value="0.3" step="0.01" min="0">
+        </div>
+
+        <div class="row">
+          <label for="openCredit">Open credit lines &amp; loans</label>
+          <input type="number" id="openCredit" value="8" step="1" min="0">
+        </div>
+
+        <div class="row">
+          <label for="realEstate">Real estate loans / lines</label>
+          <input type="number" id="realEstate" value="1" step="1" min="0">
+        </div>
+
+        <div class="row">
+          <label for="dependents">Dependents<span class="hint">Leave blank if unknown</span></label>
+          <input type="number" id="dependents" value="0" step="1" min="0">
+        </div>
+
+        <div class="row">
+          <label for="late3059">Times 30–59 days late<span class="hint">Past two years</span></label>
+          <input type="number" id="late3059" value="0" step="1" min="0">
+        </div>
+
+        <div class="row">
+          <label for="late6089">Times 60–89 days late<span class="hint">Past two years</span></label>
+          <input type="number" id="late6089" value="0" step="1" min="0">
+        </div>
+
+        <div class="row">
+          <label for="late90">Times 90+ days late<span class="hint">Past two years</span></label>
+          <input type="number" id="late90" value="0" step="1" min="0">
+        </div>
+
+        <button id="calc">Calculate risk</button>
+      </div>
+
+      <div class="result">
+        <p class="tag">Estimated outcome</p>
+        <p class="score" id="scoreText">—</p>
+        <p class="label" id="labelText"></p>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        <p class="desc" id="descText">Fill in the details and press Calculate to see a prediction.</p>
+        <div class="flags" id="flagsText"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Logistic Regression (class-weight balanced) · 85% ROC-AUC · 74% recall on real defaulters · demo only, not financial advice</footer>
+</div>
+
+<script>
+const FEATURE_NAMES = ["RevolvingUtilizationOfUnsecuredLines","age","NumberOfTime30-59DaysPastDueNotWorse","DebtRatio","MonthlyIncome","NumberOfOpenCreditLinesAndLoans","NumberOfTimes90DaysLate","NumberRealEstateLoansOrLines","NumberOfTime60-89DaysPastDueNotWorse","NumberOfDependents","IncomeMissing","DependentsMissing","HadSuspiciousLateCode"];
+const COEF = [0.722667848196306,-0.29535034256154863,0.5825115918519108,0.1160091313361234,-0.17274262465815904,0.17416598312802903,0.9216302016266446,0.08825654702465326,0.7480730643737804,0.018687192125013748,-0.1280263329240854,0.008932382594176837,-1.7520963871260122];
+const INTERCEPT = -0.7270613574454479;
+const MEANS = [0.32448509576796514,52.295555303702024,0.27583517223448156,0.4662867523531623,6418.4577097180645,8.452776351842346,0.12078080520536803,1.0182334548896992,0.0951939679597864,0.7374049160327736,0.19820798805325368,0.026160174401162674,0.0017933452889685932];
+const SCALES = [0.36469459779369534,14.771248725482417,0.994241111817406,0.3554548268606226,12890.395496873774,5.14594709265441,0.8643901947712548,1.1297681410417189,0.7887726647301229,1.1070166145197031,0.3986496977612487,0.15961146474004756,0.042309918478332334];
+const INCOME_MEDIAN = 5400.0;
+const DEPENDENTS_MEDIAN = 0.0;
+
+function num(id){
+  const v = document.getElementById(id).value;
+  return v === "" ? null : parseFloat(v);
+}
+
+function predict(){
+  let income = num("income");
+  const incomeMissing = income === null ? 1 : 0;
+  if (income === null) income = INCOME_MEDIAN;
+
+  let dependents = num("dependents");
+  const dependentsMissing = dependents === null ? 1 : 0;
+  if (dependents === null) dependents = DEPENDENTS_MEDIAN;
+
+  let late3059 = num("late3059") ?? 0;
+  let late6089 = num("late6089") ?? 0;
+  let late90 = num("late90") ?? 0;
+  const hadSuspicious = (late3059 >= 96 || late6089 >= 96 || late90 >= 96) ? 1 : 0;
+  late3059 = Math.min(late3059, 17);
+  late6089 = Math.min(late6089, 17);
+  late90 = Math.min(late90, 17);
+
+  const revolving = Math.min(num("revolving") ?? 0, 2);
+  const debtRatio = Math.min(num("debtRatio") ?? 0, 1);
+  const age = num("age") ?? 45;
+  const openCredit = num("openCredit") ?? 0;
+  const realEstate = num("realEstate") ?? 0;
+
+  const raw = [revolving, age, late3059, debtRatio, income, openCredit, late90, realEstate, late6089, dependents, incomeMissing, dependentsMissing, hadSuspicious];
+
+  let z = INTERCEPT;
+  for (let i = 0; i < raw.length; i++){
+    const scaled = (raw[i] - MEANS[i]) / SCALES[i];
+    z += scaled * COEF[i];
+  }
+  const prob = 1 / (1 + Math.exp(-z));
+
+  renderResult(prob, { incomeMissing, dependentsMissing, hadSuspicious });
+}
+
+function renderResult(prob, flags){
+  const pct = (prob * 100).toFixed(1);
+  document.getElementById("scoreText").textContent = pct + "%";
+  document.getElementById("barFill").style.width = Math.min(prob * 100, 100) + "%";
+
+  const labelEl = document.getElementById("labelText");
+  const descEl = document.getElementById("descText");
+  labelEl.className = "label";
+
+  if (prob < 0.15){
+    labelEl.textContent = "Low risk";
+    labelEl.classList.add("low");
+    descEl.textContent = "This borrower's profile looks close to the dataset's typical, low-risk case.";
+  } else if (prob < 0.40){
+    labelEl.textContent = "Medium risk";
+    labelEl.classList.add("med");
+    descEl.textContent = "Some factors here push the estimate above a typical borrower — worth a closer look.";
+  } else {
+    labelEl.textContent = "High risk";
+    labelEl.classList.add("high");
+    descEl.textContent = "Several factors here (late payments, utilization, or debt ratio) resemble the profile of borrowers who defaulted in training.";
+  }
+
+  const flagMsgs = [];
+  if (flags.incomeMissing) flagMsgs.push("Income left blank — filled with the dataset median.");
+  if (flags.dependentsMissing) flagMsgs.push("Dependents left blank — filled with the dataset median.");
+  if (flags.hadSuspicious) flagMsgs.push("A late-payment field of 96+ was entered and treated as a data-quality flag.");
+  document.getElementById("flagsText").textContent = flagMsgs.join(" ");
+}
+
+document.getElementById("calc").addEventListener("click", predict);
+predict();
+</script>
+</body>
+</html>
